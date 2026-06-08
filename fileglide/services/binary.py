@@ -58,6 +58,7 @@ class BinaryService:
         target: str | Path,
         *,
         data: bytes,
+        data_source: dict[str, Any] | None = None,
         mode: str = "overwrite",
         offset: int | None = None,
     ) -> dict[str, Any]:
@@ -92,6 +93,7 @@ class BinaryService:
         return {
             "entry": self._scope.describe_entry(resolved_root, resolved_target),
             "write_mode": mode,
+            "data_source": data_source or {"source": "hex"},
             "before_size_bytes": len(existing),
             "after_size_bytes": len(payload),
             "offset": offset,

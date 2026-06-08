@@ -3,6 +3,9 @@
 from __future__ import annotations
 
 import codecs
+import hashlib
+import os
+import tempfile
 import unicodedata
 from pathlib import Path
 from typing import Any
@@ -13,6 +16,7 @@ from fileglide.exceptions import EncodingRiskError
 
 
 DEFAULT_TEXT_ENCODING = "utf-8"
+DEFAULT_NEWLINE = "\n"
 COMMON_ENCODINGS = [
     "utf-8",
     "utf-8-sig",
@@ -27,6 +31,16 @@ BOM_MAP = {
     codecs.BOM_UTF8: "utf-8-sig",
     codecs.BOM_UTF16_LE: "utf-16-le",
     codecs.BOM_UTF16_BE: "utf-16-be",
+}
+BOM_BYTES = {
+    "utf-8": b"",
+    "utf-8-sig": codecs.BOM_UTF8,
+    "utf-16": b"",
+    "utf-16-le": codecs.BOM_UTF16_LE,
+    "utf-16-be": codecs.BOM_UTF16_BE,
+    "gb18030": b"",
+    "gbk": b"",
+    "shift_jis": b"",
 }
 
 
@@ -46,6 +60,7 @@ class EncodingService:
                 "confidence": 1.0,
                 "source": "explicit",
                 "text": text,
+                "size_bytes": len(payload),
             }
 
         if not payload:
@@ -55,6 +70,7 @@ class EncodingService:
                 "confidence": 1.0,
                 "source": "default-empty",
                 "text": "",
+                "size_bytes": 0,
             }
 
         bom_encoding = self._detect_bom(payload)
@@ -66,6 +82,7 @@ class EncodingService:
                 "confidence": 1.0,
                 "source": "bom",
                 "text": text,
+                "size_bytes": len(payload),
             }
 
         utf16_pattern_encoding = self._detect_utf16_without_bom(payload)
@@ -78,10 +95,12 @@ class EncodingService:
                 "source": "utf16-pattern",
                 "text": text,
                 "language": self._infer_language(text),
+                "size_bytes": len(payload),
             }
 
         common_candidate = self._detect_common_encoding(payload)
         if common_candidate is not None:
+            common_candidate["size_bytes"] = len(payload)
             return common_candidate
 
         matches = from_bytes(payload)
@@ -94,6 +113,7 @@ class EncodingService:
                 "confidence": 0.0,
                 "source": "fallback",
                 "text": text,
+                "size_bytes": len(payload),
             }
 
         return {
@@ -103,6 +123,7 @@ class EncodingService:
             "source": "charset-normalizer",
             "text": str(match),
             "language": match.language,
+            "size_bytes": len(payload),
         }
 
     def decode_path(
@@ -141,43 +162,111 @@ class EncodingService:
             )
         return self.detect(payload, explicit_encoding=explicit_encoding)
 
-    def validate_round_trip(self, text: str, encoding: str) -> dict[str, Any]:
-        """Ensure the provided text can be losslessly written with the encoding."""
+    def resolve_write_policy(
+        self,
+        *,
+        existing_encoding: str | None = None,
+        existing_bom: bool = False,
+        existing_newline: str | None = None,
+        requested_encoding: str | None = None,
+    ) -> dict[str, Any]:
+        """Choose charset, BOM policy, and newline policy for text writes."""
+
+        charset = requested_encoding or existing_encoding or DEFAULT_TEXT_ENCODING
+        bom = existing_bom if requested_encoding is None else self._default_bom_for_encoding(charset)
+        newline = existing_newline or DEFAULT_NEWLINE
+        return {
+            "charset": charset,
+            "bom": bom,
+            "newline": newline,
+            "charset_source": "requested" if requested_encoding else (
+                "existing" if existing_encoding else "default"
+            ),
+            "bom_source": "existing" if existing_encoding and requested_encoding is None else "default",
+            "newline_source": "existing" if existing_newline else "default",
+        }
+
+    def serialize_text(self, text: str, *, charset: str, bom: bool) -> bytes:
+        """Serialize text to bytes with explicit charset and BOM behavior."""
 
         try:
-            encoded = text.encode(encoding)
+            if charset == "utf-8-sig":
+                return text.encode("utf-8-sig")
+            encoded = text.encode(charset)
         except UnicodeEncodeError as exc:
             raise EncodingRiskError(
                 code="encoding_not_lossless",
                 message=(
-                    "Text cannot be encoded losslessly with the requested "
-                    "encoding."
+                    "Text cannot be encoded losslessly with the requested encoding."
                 ),
-                details={"encoding": encoding, "reason": str(exc)},
+                details={"encoding": charset, "reason": str(exc)},
             ) from exc
 
-        decoded = encoded.decode(encoding)
-        if decoded != text:
+        prefix = self._bom_prefix(charset, bom)
+        if prefix and not encoded.startswith(prefix):
+            return prefix + encoded
+        if not prefix:
+            existing_prefix = self._bom_prefix(charset, True)
+            if existing_prefix and encoded.startswith(existing_prefix):
+                return encoded[len(existing_prefix) :]
+        return encoded
+
+    def verify_serialized_bytes(
+        self, text: str, payload: bytes, *, charset: str, bom: bool
+    ) -> dict[str, Any]:
+        """Verify that serialized bytes decode back to the exact source text."""
+
+        decoded_payload = payload
+        prefix = self._bom_prefix(charset, bom)
+        if prefix and payload.startswith(prefix):
+            decoded_payload = payload[len(prefix) :]
+        try:
+            decoded_text = decoded_payload.decode(self._decode_charset_for_verify(charset))
+        except UnicodeDecodeError as exc:
             raise EncodingRiskError(
-                code="encoding_round_trip_mismatch",
-                message="Text changed during encoding round-trip validation.",
-                details={"encoding": encoding},
+                code="write_verification_failed",
+                message="Serialized bytes could not be decoded during verification.",
+                details={"encoding": charset, "reason": str(exc)},
+            ) from exc
+        if decoded_text != text:
+            raise EncodingRiskError(
+                code="write_verification_failed",
+                message="Serialized bytes did not round-trip to the expected text.",
+                details={"encoding": charset},
             )
-        return {"encoding": encoding, "size_bytes": len(encoded), "lossless": True}
+        return {
+            "verified": True,
+            "size_bytes": len(payload),
+            "sha256": hashlib.sha256(payload).hexdigest(),
+        }
 
-    def encoding_for_write(
-        self,
-        *,
-        existing_encoding: str | None = None,
-        requested_encoding: str | None = None,
-    ) -> str:
-        """Choose the target encoding for text writes."""
+    def atomic_write_bytes(self, path: Path, payload: bytes) -> None:
+        """Persist bytes using a same-directory atomic replace."""
 
-        if requested_encoding:
-            return requested_encoding
-        if existing_encoding:
-            return existing_encoding
-        return DEFAULT_TEXT_ENCODING
+        path.parent.mkdir(parents=True, exist_ok=True)
+        fd, temp_path = tempfile.mkstemp(dir=path.parent, prefix=f".{path.name}.", suffix=".tmp")
+        try:
+            with os.fdopen(fd, "wb") as handle:
+                handle.write(payload)
+                handle.flush()
+                os.fsync(handle.fileno())
+            os.replace(temp_path, path)
+        except Exception:
+            try:
+                os.unlink(temp_path)
+            except OSError:
+                pass
+            raise
+
+    @staticmethod
+    def detect_newline(text: str) -> str:
+        """Infer the dominant newline style from decoded text."""
+
+        if "\r\n" in text:
+            return "\r\n"
+        if "\r" in text:
+            return "\r"
+        return DEFAULT_NEWLINE
 
     @staticmethod
     def _detect_bom(payload: bytes) -> str | None:
@@ -313,3 +402,25 @@ class EncodingService:
         if profile["ascii"] == profile["length"]:
             return "English"
         return "Unknown"
+
+    @staticmethod
+    def _default_bom_for_encoding(encoding: str) -> bool:
+        """Return the default BOM behavior for a chosen encoding."""
+
+        return encoding == "utf-8-sig"
+
+    @staticmethod
+    def _decode_charset_for_verify(encoding: str) -> str:
+        """Map serialization charset to a decode charset used for verification."""
+
+        if encoding == "utf-8-sig":
+            return "utf-8"
+        return encoding
+
+    @staticmethod
+    def _bom_prefix(encoding: str, enabled: bool) -> bytes:
+        """Resolve a BOM byte prefix for the target encoding and policy."""
+
+        if not enabled:
+            return b""
+        return BOM_BYTES.get(encoding, b"")

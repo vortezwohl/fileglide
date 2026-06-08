@@ -4,7 +4,15 @@ from __future__ import annotations
 
 import click
 
-from fileglide.commands.common import pass_runtime, root_option, traversal_options
+from fileglide.commands.common import (
+    binary_content_options,
+    pass_runtime,
+    resolve_binary_content_source,
+    resolve_text_content_source,
+    root_option,
+    text_content_options,
+    traversal_options,
+)
 
 
 def create_text_group() -> click.Group:
@@ -48,20 +56,33 @@ def create_text_group() -> click.Group:
     @click.option(
         "--position", type=int, default=None, help="Insert position for insert mode."
     )
-    @click.option("--content", required=True, help="Text content to write.")
+    @text_content_options
     @click.argument("target")
     @pass_runtime
-    def write_command(runtime, root, mode, encoding, position, content, target) -> None:
+    def write_command(
+        runtime,
+        root,
+        mode,
+        encoding,
+        position,
+        content,
+        content_file,
+        content_stdin,
+        target,
+    ) -> None:
         runtime.executor.execute(
             "text.write",
             [target],
-            lambda: runtime.facade.text.write_text(
-                root,
-                target,
-                content=content,
+            lambda: _handle_text_write(
+                runtime,
+                root=root,
+                target=target,
                 mode=mode,
                 encoding=encoding,
                 position=position,
+                content=content,
+                content_file=content_file,
+                content_stdin=content_stdin,
             ),
             meta={"root": root},
         )
@@ -73,22 +94,33 @@ def create_text_group() -> click.Group:
         "--start-line", type=int, required=True, help="First line to replace."
     )
     @click.option("--end-line", type=int, required=True, help="Last line to replace.")
-    @click.option("--content", required=True, help="Replacement text.")
+    @text_content_options
     @click.argument("target")
     @pass_runtime
     def replace_lines_command(
-        runtime, root, encoding, start_line, end_line, content, target
+        runtime,
+        root,
+        encoding,
+        start_line,
+        end_line,
+        content,
+        content_file,
+        content_stdin,
+        target,
     ) -> None:
         runtime.executor.execute(
             "text.replace-lines",
             [target],
-            lambda: runtime.facade.text.replace_lines(
-                root,
-                target,
+            lambda: _handle_replace_lines(
+                runtime,
+                root=root,
+                target=target,
+                encoding=encoding,
                 start_line=start_line,
                 end_line=end_line,
                 content=content,
-                encoding=encoding,
+                content_file=content_file,
+                content_stdin=content_stdin,
             ),
             meta={"root": root},
         )
@@ -100,22 +132,33 @@ def create_text_group() -> click.Group:
         "--before/--after", default=False, help="Insert before or after the anchor."
     )
     @click.option("--anchor", required=True, help="Unique anchor string.")
-    @click.option("--content", required=True, help="Text to insert.")
+    @text_content_options
     @click.argument("target")
     @pass_runtime
     def insert_anchor_command(
-        runtime, root, encoding, before, anchor, content, target
+        runtime,
+        root,
+        encoding,
+        before,
+        anchor,
+        content,
+        content_file,
+        content_stdin,
+        target,
     ) -> None:
         runtime.executor.execute(
             "text.insert-anchor",
             [target],
-            lambda: runtime.facade.text.insert_by_anchor(
-                root,
-                target,
+            lambda: _handle_insert_anchor(
+                runtime,
+                root=root,
+                target=target,
+                encoding=encoding,
+                before=before,
                 anchor=anchor,
                 content=content,
-                before=before,
-                encoding=encoding,
+                content_file=content_file,
+                content_stdin=content_stdin,
             ),
             meta={"root": root},
         )
@@ -158,19 +201,31 @@ def create_text_group() -> click.Group:
     @click.option(
         "--offset", type=int, default=None, help="Insert offset for binary insert mode."
     )
-    @click.option("--data-hex", required=True, help="Hex-encoded binary data.")
+    @binary_content_options
     @click.argument("target")
     @pass_runtime
-    def binary_write_command(runtime, root, mode, offset, data_hex, target) -> None:
+    def binary_write_command(
+        runtime,
+        root,
+        mode,
+        offset,
+        data_hex,
+        data_file,
+        data_stdin,
+        target,
+    ) -> None:
         runtime.executor.execute(
             "text.binary-write",
             [target],
-            lambda: runtime.facade.binary.write_bytes(
-                root,
-                target,
-                data=bytes.fromhex(data_hex),
+            lambda: _handle_binary_write(
+                runtime,
+                root=root,
+                target=target,
                 mode=mode,
                 offset=offset,
+                data_hex=data_hex,
+                data_file=data_file,
+                data_stdin=data_stdin,
             ),
             meta={"root": root},
         )
@@ -189,3 +244,124 @@ def create_text_group() -> click.Group:
         )
 
     return text_group
+
+
+def _handle_text_write(
+    runtime,
+    *,
+    root,
+    target,
+    mode,
+    encoding,
+    position,
+    content,
+    content_file,
+    content_stdin,
+):
+    """Resolve payload input and dispatch the text write service."""
+
+    resolved_content, content_source = resolve_text_content_source(
+        runtime,
+        content=content,
+        content_file=content_file,
+        content_stdin=content_stdin,
+    )
+    return runtime.facade.text.write_text(
+        root,
+        target,
+        content=resolved_content,
+        content_source=content_source,
+        mode=mode,
+        encoding=encoding,
+        position=position,
+    )
+
+
+def _handle_replace_lines(
+    runtime,
+    *,
+    root,
+    target,
+    encoding,
+    start_line,
+    end_line,
+    content,
+    content_file,
+    content_stdin,
+):
+    """Resolve payload input and dispatch the line replacement service."""
+
+    resolved_content, content_source = resolve_text_content_source(
+        runtime,
+        content=content,
+        content_file=content_file,
+        content_stdin=content_stdin,
+    )
+    return runtime.facade.text.replace_lines(
+        root,
+        target,
+        start_line=start_line,
+        end_line=end_line,
+        content=resolved_content,
+        content_source=content_source,
+        encoding=encoding,
+    )
+
+
+def _handle_insert_anchor(
+    runtime,
+    *,
+    root,
+    target,
+    encoding,
+    before,
+    anchor,
+    content,
+    content_file,
+    content_stdin,
+):
+    """Resolve payload input and dispatch the anchor insertion service."""
+
+    resolved_content, content_source = resolve_text_content_source(
+        runtime,
+        content=content,
+        content_file=content_file,
+        content_stdin=content_stdin,
+    )
+    return runtime.facade.text.insert_by_anchor(
+        root,
+        target,
+        anchor=anchor,
+        content=resolved_content,
+        content_source=content_source,
+        before=before,
+        encoding=encoding,
+    )
+
+
+def _handle_binary_write(
+    runtime,
+    *,
+    root,
+    target,
+    mode,
+    offset,
+    data_hex,
+    data_file,
+    data_stdin,
+):
+    """Resolve payload input and dispatch the binary write service."""
+
+    payload, data_source = resolve_binary_content_source(
+        data_hex=data_hex,
+        data_file=data_file,
+        data_stdin=data_stdin,
+    )
+    return runtime.facade.binary.write_bytes(
+        root,
+        target,
+        data=payload,
+        data_source=data_source,
+        mode=mode,
+        offset=offset,
+    )
