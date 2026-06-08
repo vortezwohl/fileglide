@@ -10,7 +10,8 @@ from fileglide.exceptions import ScopeError
 class ScopeService:
     """Resolve user paths and keep operations inside an allowed root."""
 
-    def normalize_root(self, root: str | Path | None) -> Path:
+    @staticmethod
+    def normalize_root(root: str | Path | None) -> Path:
         """Resolve the configured root path without requiring prior existence."""
 
         base = Path(root) if root is not None else Path.cwd()
@@ -32,7 +33,8 @@ class ScopeService:
         self.ensure_within_root(resolved_root, resolved_target)
         return resolved_root, resolved_target
 
-    def ensure_within_root(self, root: Path, target: Path) -> None:
+    @staticmethod
+    def ensure_within_root(root: Path, target: Path) -> None:
         """Raise when a resolved target escapes the resolved root."""
 
         try:
@@ -45,7 +47,8 @@ class ScopeService:
                 path=str(target),
             ) from exc
 
-    def describe_entry(self, root: Path, target: Path) -> dict[str, object]:
+    @staticmethod
+    def describe_entry(root: Path, target: Path) -> dict[str, object]:
         """Build normalized metadata for a filesystem entry."""
 
         exists = target.exists()

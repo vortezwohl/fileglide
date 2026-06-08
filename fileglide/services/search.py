@@ -8,7 +8,7 @@ from typing import Any, Iterable
 
 from vortezwohl.nlp import LevenshteinDistance
 
-from fileglide.exceptions import NotFoundError, ValidationError
+from fileglide.exceptions import ValidationError
 from fileglide.services.encoding import EncodingService
 from fileglide.services.scope import ScopeService
 from fileglide.services.traversal import TraversalService
