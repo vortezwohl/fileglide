@@ -54,6 +54,106 @@ def test_path_delete_dry_run_returns_preview(cli, runner, workspace: Path) -> No
     assert target.exists()
 
 
+def test_file_move_supports_cross_root(
+    cli, runner, workspace: Path, tmp_path_factory
+) -> None:
+    destination_root = tmp_path_factory.mktemp("file-move-destination")
+
+    result = runner.invoke(
+        cli,
+        [
+            "file",
+            "move",
+            "--root",
+            str(workspace),
+            "--to-root",
+            str(destination_root),
+            "--confirm",
+            "docs/alpha.txt",
+            "alpha.txt",
+        ],
+    )
+    assert result.exit_code == 0, result.output
+    payload = parse_json(result.output)
+    assert payload["result"]["moved"] is True
+    assert payload["result"]["cross_root"] is True
+    assert payload["result"]["source"]["exists"] is False
+    assert payload["result"]["destination"]["exists"] is True
+    assert not (workspace / "docs" / "alpha.txt").exists()
+    assert (destination_root / "alpha.txt").read_text(encoding="utf-8") == (
+        "alpha\nbeta\ngamma\n"
+    )
+
+
+def test_path_move_moves_descendants_cross_root(
+    cli, runner, workspace: Path, tmp_path_factory
+) -> None:
+    destination_root = tmp_path_factory.mktemp("path-move-destination")
+
+    result = runner.invoke(
+        cli,
+        [
+            "path",
+            "move",
+            "--root",
+            str(workspace),
+            "--to-root",
+            str(destination_root),
+            "--confirm",
+            "docs",
+            "docs-archive",
+        ],
+    )
+    assert result.exit_code == 0, result.output
+    payload = parse_json(result.output)
+    assert payload["result"]["moved"] is True
+    assert payload["result"]["cross_root"] is True
+    assert not (workspace / "docs").exists()
+    assert (destination_root / "docs-archive" / "alpha.txt").exists()
+    assert (destination_root / "docs-archive" / "notes.log").exists()
+
+
+def test_file_move_dry_run_returns_preview(cli, runner, workspace: Path) -> None:
+    result = runner.invoke(
+        cli,
+        [
+            "file",
+            "move",
+            "--root",
+            str(workspace),
+            "--dry-run",
+            "docs/alpha.txt",
+            "alpha-moved.txt",
+        ],
+    )
+    assert result.exit_code == 0, result.output
+    payload = parse_json(result.output)
+    assert payload["result"]["moved"] is False
+    assert payload["result"]["preview"]["dry_run"] is True
+    assert (workspace / "docs" / "alpha.txt").exists()
+    assert not (workspace / "alpha-moved.txt").exists()
+
+
+def test_path_move_rejects_destination_inside_source(
+    cli, runner, workspace: Path
+) -> None:
+    result = runner.invoke(
+        cli,
+        [
+            "path",
+            "move",
+            "--root",
+            str(workspace),
+            "--confirm",
+            "docs",
+            "docs/archive",
+        ],
+    )
+    assert result.exit_code == 1, result.output
+    payload = parse_json(result.output)
+    assert payload["errors"][0]["code"] == "destination_inside_source"
+
+
 def test_tree_list_respects_depth(cli, runner, workspace: Path) -> None:
     (workspace / "docs" / "nested").mkdir()
     (workspace / "docs" / "nested" / "deep.txt").write_text("deep", encoding="utf-8")
@@ -465,3 +565,37 @@ def test_batch_run_dry_run(
     assert payload["result"]["dry_run"] is True
     assert payload["result"]["step_count"] == 2
     assert not (workspace / "generated.txt").exists()
+
+
+def test_batch_run_dry_run_supports_file_move(
+    cli, runner, workspace: Path, tmp_path: Path, tmp_path_factory
+) -> None:
+    destination_root = tmp_path_factory.mktemp("batch-move-destination")
+    plan_path = tmp_path / "move-plan.json"
+    plan_path.write_text(
+        json.dumps(
+            {
+                "steps": [
+                    {
+                        "action": "file.move",
+                        "arguments": {
+                            "root": str(workspace),
+                            "source": "docs/alpha.txt",
+                            "destination_root": str(destination_root),
+                            "destination": "alpha.txt",
+                            "confirm": True,
+                        },
+                    }
+                ]
+            },
+            ensure_ascii=False,
+            indent=2,
+        ),
+        encoding="utf-8",
+    )
+
+    result = runner.invoke(cli, ["batch", "run", "--dry-run", str(plan_path)])
+    assert result.exit_code == 0, result.output
+    payload = parse_json(result.output)
+    assert payload["result"]["results"][0]["ok"] is True
+

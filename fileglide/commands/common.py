@@ -1,9 +1,9 @@
-"""Shared click helpers for command modules."""
+"Shared Click options and input resolution helpers for command modules."
 
 from __future__ import annotations
 
-from pathlib import Path
 from collections.abc import Callable
+from pathlib import Path
 from typing import Any
 
 import click
@@ -24,6 +24,17 @@ def root_option(func: Callable[..., Any]) -> Callable[..., Any]:
         type=click.Path(path_type=str),
         default=None,
         help="Scope root used to resolve relative targets.",
+    )(func)
+
+
+def destination_root_option(func: Callable[..., Any]) -> Callable[..., Any]:
+    """Add the destination root option used to resolve cross-root move targets."""
+
+    return click.option(
+        "--to-root",
+        type=click.Path(path_type=str),
+        default=None,
+        help="Destination root used to resolve the destination path.",
     )(func)
 
 

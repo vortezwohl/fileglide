@@ -1,4 +1,4 @@
-"""Facade that coordinates fileglide domain services."""
+"Facade that coordinates services for CLI and batch operations."
 
 from __future__ import annotations
 
@@ -34,8 +34,10 @@ class FileGlideFacade:
         self._batch_actions: dict[str, Callable[..., dict[str, Any]]] = {
             "file.create": self.filesystem.create_file,
             "file.delete": self.filesystem.delete_file,
+            "file.move": self.filesystem.move_file,
             "path.create": self.filesystem.create_path,
             "path.delete": self.filesystem.delete_path,
+            "path.move": self.filesystem.move_path,
             "text.write": self.text.write_text,
             "text.replace-lines": self.text.replace_lines,
             "binary.write": self.binary.write_bytes,

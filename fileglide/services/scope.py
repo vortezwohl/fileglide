@@ -1,4 +1,4 @@
-"""Path normalization and scope enforcement helpers."""
+"""Path resolution helpers and root scope enforcement."""
 
 from __future__ import annotations
 
@@ -8,11 +8,11 @@ from fileglide.exceptions import ScopeError
 
 
 class ScopeService:
-    """Resolve user paths and keep operations inside an allowed root."""
+    """Resolve command paths while enforcing root scope constraints."""
 
     @staticmethod
     def normalize_root(root: str | Path | None) -> Path:
-        """Resolve the configured root path without requiring prior existence."""
+        """Resolve the root directory used by a command."""
 
         base = Path(root) if root is not None else Path.cwd()
         return base.expanduser().resolve(strict=False)
@@ -20,22 +20,39 @@ class ScopeService:
     def resolve_target(
         self, root: str | Path | None, target: str | Path
     ) -> tuple[Path, Path]:
-        """Resolve a target path and verify that it stays within the root scope."""
+        """Resolve a target path and ensure it remains inside its root."""
 
-        resolved_root = self.normalize_root(root)
-        raw_target = Path(target)
-        if raw_target.is_absolute():
-            resolved_target = raw_target.expanduser().resolve(strict=False)
-        else:
-            resolved_target = (
-                (resolved_root / raw_target).expanduser().resolve(strict=False)
-            )
+        resolved_root, resolved_target = self._resolve_against_root(root, target)
         self.ensure_within_root(resolved_root, resolved_target)
         return resolved_root, resolved_target
 
+    def resolve_move_pair(
+        self,
+        source_root: str | Path | None,
+        source: str | Path,
+        destination_root: str | Path | None,
+        destination: str | Path,
+    ) -> tuple[Path, Path, Path, Path]:
+        """Resolve move sources and destinations, including controlled cross-root moves."""
+
+        resolved_source_root, resolved_source = self.resolve_target(source_root, source)
+        actual_destination_root = destination_root
+        if actual_destination_root is None:
+            actual_destination_root = source_root
+        resolved_destination_root, resolved_destination = self.resolve_target(
+            actual_destination_root,
+            destination,
+        )
+        return (
+            resolved_source_root,
+            resolved_source,
+            resolved_destination_root,
+            resolved_destination,
+        )
+
     @staticmethod
     def ensure_within_root(root: Path, target: Path) -> None:
-        """Raise when a resolved target escapes the resolved root."""
+        """Raise a structured error when a target escapes its root."""
 
         try:
             target.relative_to(root)
@@ -71,3 +88,18 @@ class ScopeService:
             "kind": kind,
             "exists": exists,
         }
+
+    def _resolve_against_root(
+        self, root: str | Path | None, target: str | Path
+    ) -> tuple[Path, Path]:
+        """Resolve an absolute target path against a given root."""
+
+        resolved_root = self.normalize_root(root)
+        raw_target = Path(target)
+        if raw_target.is_absolute():
+            resolved_target = raw_target.expanduser().resolve(strict=False)
+        else:
+            resolved_target = (
+                (resolved_root / raw_target).expanduser().resolve(strict=False)
+            )
+        return resolved_root, resolved_target

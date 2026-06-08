@@ -1,10 +1,11 @@
-"""Commands focused on file lifecycle and file-oriented search."""
+"CLI commands for file lifecycle operations and file search."
 
 from __future__ import annotations
 
 import click
 
 from fileglide.commands.common import (
+    destination_root_option,
     destructive_options,
     pass_runtime,
     root_option,
@@ -67,6 +68,30 @@ def create_file_group() -> click.Group:
                 missing_ok=missing_ok,
             ),
             meta={"root": root, "dry_run": dry_run},
+        )
+
+    @file_group.command("move")
+    @root_option
+    @destination_root_option
+    @destructive_options
+    @click.argument("source")
+    @click.argument("destination")
+    @pass_runtime
+    def move_command(
+        runtime, root, to_root, dry_run, confirm, source, destination
+    ) -> None:
+        runtime.executor.execute(
+            "file.move",
+            [source, destination],
+            lambda: runtime.facade.filesystem.move_file(
+                root,
+                source,
+                destination,
+                destination_root=to_root,
+                dry_run=dry_run,
+                confirm=confirm,
+            ),
+            meta={"root": root, "to_root": to_root, "dry_run": dry_run},
         )
 
     @file_group.command("exists")
