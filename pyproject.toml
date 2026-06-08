@@ -4,10 +4,10 @@ build-backend = "hatchling.build"
 
 [project]
 name = "fileglide"
-version = "0.1.0"
-description = "Agent-oriented CLI for structured filesystem, text, and binary workflows"
+version = "0.0.1"
+description = "Agent-oriented CLI for structured filesystem."
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.10"
 dependencies = [
     "charset-normalizer>=3.4.7",
     "click>=8.4.1",
