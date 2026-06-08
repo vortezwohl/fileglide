@@ -48,8 +48,11 @@ class FileGlideFacade:
         operation = self._get_batch_action(action)
         return operation(**arguments)
 
-    def preview_batch_step(self, action: str, arguments: dict[str, Any]) -> dict[str, Any]:
-        """Return a structured preview for a batch step without mutating the filesystem."""
+    def preview_batch_step(
+        self, action: str, arguments: dict[str, Any]
+    ) -> dict[str, Any]:
+        """Return a structured preview for a batch step without
+        mutating the filesystem."""
 
         operation = self._get_batch_action(action)
         self._bind_batch_arguments(action, operation, arguments)

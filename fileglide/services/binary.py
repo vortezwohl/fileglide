@@ -118,7 +118,9 @@ class BinaryService:
         shutil.copyfile(resolved_source, resolved_destination)
         return {
             "source": self._scope.describe_entry(resolved_root, resolved_source),
-            "destination": self._scope.describe_entry(resolved_root, resolved_destination),
+            "destination": self._scope.describe_entry(
+                resolved_root, resolved_destination
+            ),
             "copied": True,
             "size_bytes": resolved_destination.stat().st_size,
         }

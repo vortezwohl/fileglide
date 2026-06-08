@@ -14,7 +14,6 @@ CommandDecorator = Callable[[Callable[..., Any]], Callable[..., Any]]
 pass_runtime = click.make_pass_decorator(RuntimeState)
 
 
-
 def root_option(func: Callable[..., Any]) -> Callable[..., Any]:
     """Add the common root option to a click command."""
 
@@ -24,7 +23,6 @@ def root_option(func: Callable[..., Any]) -> Callable[..., Any]:
         default=None,
         help="Scope root used to resolve relative targets.",
     )(func)
-
 
 
 def destructive_options(func: Callable[..., Any]) -> Callable[..., Any]:
@@ -42,7 +40,6 @@ def destructive_options(func: Callable[..., Any]) -> Callable[..., Any]:
         default=False,
         help="Preview the operation without mutating the filesystem.",
     )(decorated)
-
 
 
 def traversal_options(func: Callable[..., Any]) -> Callable[..., Any]:

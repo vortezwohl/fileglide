@@ -4,8 +4,12 @@ from __future__ import annotations
 
 import click
 
-from fileglide.commands.common import destructive_options, pass_runtime, root_option, traversal_options
-
+from fileglide.commands.common import (
+    destructive_options,
+    pass_runtime,
+    root_option,
+    traversal_options,
+)
 
 
 def create_path_group() -> click.Group:
@@ -17,26 +21,48 @@ def create_path_group() -> click.Group:
 
     @path_group.command("create")
     @root_option
-    @click.option("--parents/--no-parents", default=True, help="Create missing parent directories.")
-    @click.option("--exist-ok/--fail-if-exists", default=True, help="Allow the directory to exist already.")
+    @click.option(
+        "--parents/--no-parents",
+        default=True,
+        help="Create missing parent directories.",
+    )
+    @click.option(
+        "--exist-ok/--fail-if-exists",
+        default=True,
+        help="Allow the directory to exist already.",
+    )
     @click.argument("target")
     @pass_runtime
     def create_command(runtime, root, parents, exist_ok, target) -> None:
         runtime.executor.execute(
             "path.create",
             [target],
-            lambda: runtime.facade.filesystem.create_path(root, target, parents=parents, exist_ok=exist_ok),
+            lambda: runtime.facade.filesystem.create_path(
+                root, target, parents=parents, exist_ok=exist_ok
+            ),
             meta={"root": root},
         )
 
     @path_group.command("delete")
     @root_option
     @destructive_options
-    @click.option("--recursive", is_flag=True, default=False, help="Delete non-empty directories recursively.")
-    @click.option("--missing-ok", is_flag=True, default=False, help="Allow deleting a missing directory.")
+    @click.option(
+        "--recursive",
+        is_flag=True,
+        default=False,
+        help="Delete non-empty directories recursively.",
+    )
+    @click.option(
+        "--missing-ok",
+        is_flag=True,
+        default=False,
+        help="Allow deleting a missing directory.",
+    )
     @click.argument("target")
     @pass_runtime
-    def delete_command(runtime, root, dry_run, confirm, recursive, missing_ok, target) -> None:
+    def delete_command(
+        runtime, root, dry_run, confirm, recursive, missing_ok, target
+    ) -> None:
         runtime.executor.execute(
             "path.delete",
             [target],
@@ -75,7 +101,9 @@ def create_path_group() -> click.Group:
     )
     @click.argument("start", default=".")
     @pass_runtime
-    def list_command(runtime, root, include, exclude, max_depth, recursive, kind, start) -> None:
+    def list_command(
+        runtime, root, include, exclude, max_depth, recursive, kind, start
+    ) -> None:
         runtime.executor.execute(
             "path.list",
             [start],
@@ -108,11 +136,29 @@ def create_path_group() -> click.Group:
         show_default=True,
         help="Path entry kind to scan.",
     )
-    @click.option("--limit", type=int, default=50, show_default=True, help="Maximum number of matches.")
+    @click.option(
+        "--limit",
+        type=int,
+        default=50,
+        show_default=True,
+        help="Maximum number of matches.",
+    )
     @click.argument("query")
     @click.argument("start", default=".")
     @pass_runtime
-    def search_command(runtime, root, include, exclude, max_depth, recursive, mode, kind, limit, query, start) -> None:
+    def search_command(
+        runtime,
+        root,
+        include,
+        exclude,
+        max_depth,
+        recursive,
+        mode,
+        kind,
+        limit,
+        query,
+        start,
+    ) -> None:
         runtime.executor.execute(
             "path.search",
             [start],

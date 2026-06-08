@@ -7,7 +7,6 @@ import click
 from fileglide.commands.common import pass_runtime, root_option, traversal_options
 
 
-
 def create_text_group() -> click.Group:
     """Create the text command group."""
 
@@ -46,7 +45,9 @@ def create_text_group() -> click.Group:
         help="Text write mode.",
     )
     @click.option("--encoding", default=None, help="Force a specific text encoding.")
-    @click.option("--position", type=int, default=None, help="Insert position for insert mode.")
+    @click.option(
+        "--position", type=int, default=None, help="Insert position for insert mode."
+    )
     @click.option("--content", required=True, help="Text content to write.")
     @click.argument("target")
     @pass_runtime
@@ -68,12 +69,16 @@ def create_text_group() -> click.Group:
     @text_group.command("replace-lines")
     @root_option
     @click.option("--encoding", default=None, help="Force a specific text encoding.")
-    @click.option("--start-line", type=int, required=True, help="First line to replace.")
+    @click.option(
+        "--start-line", type=int, required=True, help="First line to replace."
+    )
     @click.option("--end-line", type=int, required=True, help="Last line to replace.")
     @click.option("--content", required=True, help="Replacement text.")
     @click.argument("target")
     @pass_runtime
-    def replace_lines_command(runtime, root, encoding, start_line, end_line, content, target) -> None:
+    def replace_lines_command(
+        runtime, root, encoding, start_line, end_line, content, target
+    ) -> None:
         runtime.executor.execute(
             "text.replace-lines",
             [target],
@@ -91,12 +96,16 @@ def create_text_group() -> click.Group:
     @text_group.command("insert-anchor")
     @root_option
     @click.option("--encoding", default=None, help="Force a specific text encoding.")
-    @click.option("--before/--after", default=False, help="Insert before or after the anchor.")
+    @click.option(
+        "--before/--after", default=False, help="Insert before or after the anchor."
+    )
     @click.option("--anchor", required=True, help="Unique anchor string.")
     @click.option("--content", required=True, help="Text to insert.")
     @click.argument("target")
     @pass_runtime
-    def insert_anchor_command(runtime, root, encoding, before, anchor, content, target) -> None:
+    def insert_anchor_command(
+        runtime, root, encoding, before, anchor, content, target
+    ) -> None:
         runtime.executor.execute(
             "text.insert-anchor",
             [target],
@@ -118,7 +127,9 @@ def create_text_group() -> click.Group:
     @click.argument("pattern")
     @click.argument("start", default=".")
     @pass_runtime
-    def grep_command(runtime, root, include, exclude, max_depth, recursive, encoding, pattern, start) -> None:
+    def grep_command(
+        runtime, root, include, exclude, max_depth, recursive, encoding, pattern, start
+    ) -> None:
         runtime.executor.execute(
             "text.grep",
             [start],
@@ -144,7 +155,9 @@ def create_text_group() -> click.Group:
         show_default=True,
         help="Binary write mode.",
     )
-    @click.option("--offset", type=int, default=None, help="Insert offset for binary insert mode.")
+    @click.option(
+        "--offset", type=int, default=None, help="Insert offset for binary insert mode."
+    )
     @click.option("--data-hex", required=True, help="Hex-encoded binary data.")
     @click.argument("target")
     @pass_runtime

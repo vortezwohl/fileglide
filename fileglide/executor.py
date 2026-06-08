@@ -77,7 +77,9 @@ class CommandExecutor:
 
         if self._context.output_format == "json":
             indent = 2 if self._context.pretty else None
-            click.echo(json.dumps(response.to_dict(), ensure_ascii=False, indent=indent))
+            click.echo(
+                json.dumps(response.to_dict(), ensure_ascii=False, indent=indent)
+            )
             return
 
         click.echo(self._render_text(response))

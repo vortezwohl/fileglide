@@ -66,7 +66,11 @@ class BatchService:
             action = step["action"]
             arguments = dict(step.get("arguments") or {})
             try:
-                result = preview_runner(action, arguments) if dry_run else operation_runner(action, arguments)
+                result = (
+                    preview_runner(action, arguments)
+                    if dry_run
+                    else operation_runner(action, arguments)
+                )
                 step_ok = bool(result.get("ok", True))
                 ok = ok and step_ok
                 results.append(

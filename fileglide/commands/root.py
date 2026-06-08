@@ -14,7 +14,6 @@ from fileglide.commands.tree import create_tree_group
 from fileglide.runtime import build_runtime
 
 
-
 def create_root_command() -> click.Command:
     """Create the root click command tree."""
 

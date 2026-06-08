@@ -33,7 +33,9 @@ BOM_MAP = {
 class EncodingService:
     """Detect encodings, decode bytes, and validate text write safety."""
 
-    def detect(self, payload: bytes, explicit_encoding: str | None = None) -> dict[str, Any]:
+    def detect(
+        self, payload: bytes, explicit_encoding: str | None = None
+    ) -> dict[str, Any]:
         """Detect the most suitable text encoding for a payload."""
 
         if explicit_encoding is not None:
@@ -103,7 +105,9 @@ class EncodingService:
             "language": match.language,
         }
 
-    def decode_path(self, path: Path, explicit_encoding: str | None = None) -> dict[str, Any]:
+    def decode_path(
+        self, path: Path, explicit_encoding: str | None = None
+    ) -> dict[str, Any]:
         """Read a path as text using explicit or detected encoding."""
 
         payload = path.read_bytes()
@@ -122,7 +126,9 @@ class EncodingService:
         payload = path.read_bytes()
         return self.is_binary_payload(payload)
 
-    def ensure_text(self, path: Path, explicit_encoding: str | None = None) -> dict[str, Any]:
+    def ensure_text(
+        self, path: Path, explicit_encoding: str | None = None
+    ) -> dict[str, Any]:
         """Load text metadata and fail if the file looks binary."""
 
         payload = path.read_bytes()
@@ -143,7 +149,10 @@ class EncodingService:
         except UnicodeEncodeError as exc:
             raise EncodingRiskError(
                 code="encoding_not_lossless",
-                message="Text cannot be encoded losslessly with the requested encoding.",
+                message=(
+                    "Text cannot be encoded losslessly with the requested "
+                    "encoding."
+                ),
                 details={"encoding": encoding, "reason": str(exc)},
             ) from exc
 
@@ -226,7 +235,13 @@ class EncodingService:
         if not candidates:
             return None
 
-        best = max(candidates, key=lambda item: (item["_score"], -COMMON_ENCODINGS.index(item["encoding"])))
+        best = max(
+            candidates,
+            key=lambda item: (
+                item["_score"],
+                -COMMON_ENCODINGS.index(item["encoding"]),
+            ),
+        )
         best.pop("_score", None)
         return best
 
@@ -252,7 +267,11 @@ class EncodingService:
                 profile["hiragana"] += 1
             if 0x30A0 <= codepoint <= 0x30FF:
                 profile["katakana"] += 1
-            if unicodedata.category(char).startswith("C") and char not in {"\n", "\r", "\t"}:
+            if unicodedata.category(char).startswith("C") and char not in {
+                "\n",
+                "\r",
+                "\t",
+            }:
                 profile["control"] += 1
         return profile
 

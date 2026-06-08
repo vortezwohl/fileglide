@@ -77,7 +77,9 @@ class SearchService:
                 score_path = self._distance(query, str(entry["relative_path"]))
                 score = min(score_name, score_path)
                 scored.append({**entry, "score": score})
-            matches = sorted(scored, key=lambda item: (item["score"], item["relative_path"]))
+            matches = sorted(
+                scored, key=lambda item: (item["score"], item["relative_path"])
+            )
         else:
             raise ValidationError(
                 code="invalid_search_mode",

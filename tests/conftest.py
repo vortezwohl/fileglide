@@ -37,8 +37,12 @@ def workspace(tmp_path: Path) -> Path:
     """Create a temporary workspace with representative files."""
 
     (tmp_path / "docs").mkdir()
-    (tmp_path / "docs" / "alpha.txt").write_text("alpha\nbeta\ngamma\n", encoding="utf-8")
-    (tmp_path / "docs" / "notes.log").write_text("line one\nmatch this line\n", encoding="utf-8")
+    (tmp_path / "docs" / "alpha.txt").write_text(
+        "alpha\nbeta\ngamma\n", encoding="utf-8"
+    )
+    (tmp_path / "docs" / "notes.log").write_text(
+        "line one\nmatch this line\n", encoding="utf-8"
+    )
     (tmp_path / "bytes.bin").write_bytes(bytes.fromhex("00010203ff"))
     return tmp_path
 
@@ -51,7 +55,12 @@ def sample_plan_path(tmp_path: Path) -> Path:
         "steps": [
             {
                 "action": "file.create",
-                "arguments": {"root": str(tmp_path), "target": "generated.txt", "parents": False, "exist_ok": False},
+                "arguments": {
+                    "root": str(tmp_path),
+                    "target": "generated.txt",
+                    "parents": False,
+                    "exist_ok": False,
+                },
                 "destructive": False,
             },
             {
@@ -67,5 +76,7 @@ def sample_plan_path(tmp_path: Path) -> Path:
         ]
     }
     plan_path = tmp_path / "plan.json"
-    plan_path.write_text(json.dumps(plan, ensure_ascii=False, indent=2), encoding="utf-8")
+    plan_path.write_text(
+        json.dumps(plan, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
     return plan_path

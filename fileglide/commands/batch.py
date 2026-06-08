@@ -7,7 +7,6 @@ import click
 from fileglide.commands.common import pass_runtime
 
 
-
 def create_batch_group() -> click.Group:
     """Create the batch command group."""
 
@@ -16,7 +15,12 @@ def create_batch_group() -> click.Group:
         """Validate and execute explicit JSON batch plans."""
 
     @batch_group.command("run")
-    @click.option("--dry-run/--apply", default=True, show_default=True, help="Preview or execute the plan.")
+    @click.option(
+        "--dry-run/--apply",
+        default=True,
+        show_default=True,
+        help="Preview or execute the plan.",
+    )
     @click.argument("plan")
     @pass_runtime
     def run_command(runtime, dry_run, plan) -> None:

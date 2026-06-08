@@ -13,7 +13,9 @@ from fileglide.services.scope import ScopeService
 class TextService:
     """Read and edit text files with explicit metadata reporting."""
 
-    def __init__(self, scope_service: ScopeService, encoding_service: EncodingService) -> None:
+    def __init__(
+        self, scope_service: ScopeService, encoding_service: EncodingService
+    ) -> None:
         self._scope = scope_service
         self._encoding = encoding_service
 
@@ -56,7 +58,7 @@ class TextService:
                     details={"start_line": start_line, "end_line": end_line},
                     path=str(resolved_target),
                 )
-            selected = lines[start - 1:end]
+            selected = lines[start - 1 : end]
             selected_text = "\n".join(selected)
             selected_lines = [
                 {"line_number": start + index, "text": line}
@@ -95,7 +97,9 @@ class TextService:
         previous_info = None
         previous_text = ""
         if existed:
-            previous_info = self._encoding.ensure_text(resolved_target, explicit_encoding=encoding)
+            previous_info = self._encoding.ensure_text(
+                resolved_target, explicit_encoding=encoding
+            )
             previous_text = previous_info["text"]
 
         target_encoding = self._encoding.encoding_for_write(
@@ -133,7 +137,9 @@ class TextService:
             "entry": self._scope.describe_entry(resolved_root, resolved_target),
             "write_mode": mode,
             "encoding": validation,
-            "before_size_bytes": len(previous_text.encode(target_encoding)) if existed else 0,
+            "before_size_bytes": len(previous_text.encode(target_encoding))
+            if existed
+            else 0,
             "after_size_bytes": validation["size_bytes"],
             "insert_position": position,
         }

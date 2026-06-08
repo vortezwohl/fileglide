@@ -55,7 +55,9 @@ class TraversalService:
                 include_patterns,
                 exclude_patterns,
             ):
-                entries.append(self._entry_record(resolved_root, resolved_start, depth=0))
+                entries.append(
+                    self._entry_record(resolved_root, resolved_start, depth=0)
+                )
         else:
             if kind in {"all", "directory"} and self._matches_filters(
                 resolved_root,
@@ -63,8 +65,12 @@ class TraversalService:
                 include_patterns,
                 exclude_patterns,
             ):
-                entries.append(self._entry_record(resolved_root, resolved_start, depth=0))
-            for entry in sorted(resolved_start.iterdir(), key=lambda item: item.name.casefold()):
+                entries.append(
+                    self._entry_record(resolved_root, resolved_start, depth=0)
+                )
+            for entry in sorted(
+                resolved_start.iterdir(), key=lambda item: item.name.casefold()
+            ):
                 entries.extend(
                     self._walk(
                         root=resolved_root,
@@ -108,7 +114,9 @@ class TraversalService:
             return []
 
         records: list[dict[str, object]] = []
-        if self._is_kind_match(entry, kind) and self._matches_filters(root, entry, include, exclude):
+        if self._is_kind_match(entry, kind) and self._matches_filters(
+            root, entry, include, exclude
+        ):
             records.append(self._entry_record(root, entry, depth=depth))
 
         if entry.is_dir() and recursive:
@@ -143,13 +151,21 @@ class TraversalService:
         exclude: tuple[str, ...],
     ) -> bool:
         relative_path = str(entry.relative_to(root)).replace("\\", "/")
-        if include and not any(fnmatch(relative_path, pattern) or fnmatch(entry.name, pattern) for pattern in include):
+        if include and not any(
+            fnmatch(relative_path, pattern) or fnmatch(entry.name, pattern)
+            for pattern in include
+        ):
             return False
-        if exclude and any(fnmatch(relative_path, pattern) or fnmatch(entry.name, pattern) for pattern in exclude):
+        if exclude and any(
+            fnmatch(relative_path, pattern) or fnmatch(entry.name, pattern)
+            for pattern in exclude
+        ):
             return False
         return True
 
-    def _entry_record(self, root: Path, entry: Path, *, depth: int) -> dict[str, object]:
+    def _entry_record(
+        self, root: Path, entry: Path, *, depth: int
+    ) -> dict[str, object]:
         metadata = self._scope.describe_entry(root, entry)
         size_bytes = entry.stat().st_size if entry.is_file() else 0
         return {**metadata, "depth": depth, "size_bytes": size_bytes}

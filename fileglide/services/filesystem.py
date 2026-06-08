@@ -133,7 +133,10 @@ class FilesystemService:
                 path=str(resolved_target),
             )
         resolved_target.mkdir(parents=parents, exist_ok=exist_ok)
-        return {"created": True, "entry": self._scope.describe_entry(resolved_root, resolved_target)}
+        return {
+            "created": True,
+            "entry": self._scope.describe_entry(resolved_root, resolved_target),
+        }
 
     def delete_path(
         self,
@@ -174,7 +177,10 @@ class FilesystemService:
             raise ValidationError(
                 code="directory_not_empty",
                 message="Directory is not empty. Pass --recursive to delete it.",
-                details={"target": str(resolved_target), "descendant_count": len(descendants)},
+                details={
+                    "target": str(resolved_target),
+                    "descendant_count": len(descendants),
+                },
                 path=str(resolved_target),
             )
 

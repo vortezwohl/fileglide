@@ -7,7 +7,6 @@ from pathlib import Path
 from typing import Any
 
 
-
 def to_primitive(value: Any) -> Any:
     """Convert supported runtime values into JSON-safe primitives."""
 

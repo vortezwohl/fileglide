@@ -25,7 +25,6 @@ class RuntimeState:
     executor: CommandExecutor
 
 
-
 def build_runtime(output_format: str = "json", pretty: bool = True) -> RuntimeState:
     """Create the runtime objects needed by the CLI."""
 

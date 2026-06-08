@@ -7,7 +7,6 @@ import click
 from fileglide.commands.common import pass_runtime, root_option, traversal_options
 
 
-
 def create_tree_group() -> click.Group:
     """Create the tree command group."""
 
@@ -27,7 +26,9 @@ def create_tree_group() -> click.Group:
     )
     @click.argument("start", default=".")
     @pass_runtime
-    def list_command(runtime, root, include, exclude, max_depth, recursive, kind, start) -> None:
+    def list_command(
+        runtime, root, include, exclude, max_depth, recursive, kind, start
+    ) -> None:
         runtime.executor.execute(
             "tree.list",
             [start],

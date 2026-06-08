@@ -16,7 +16,9 @@ class ScopeService:
         base = Path(root) if root is not None else Path.cwd()
         return base.expanduser().resolve(strict=False)
 
-    def resolve_target(self, root: str | Path | None, target: str | Path) -> tuple[Path, Path]:
+    def resolve_target(
+        self, root: str | Path | None, target: str | Path
+    ) -> tuple[Path, Path]:
         """Resolve a target path and verify that it stays within the root scope."""
 
         resolved_root = self.normalize_root(root)
@@ -24,7 +26,9 @@ class ScopeService:
         if raw_target.is_absolute():
             resolved_target = raw_target.expanduser().resolve(strict=False)
         else:
-            resolved_target = (resolved_root / raw_target).expanduser().resolve(strict=False)
+            resolved_target = (
+                (resolved_root / raw_target).expanduser().resolve(strict=False)
+            )
         self.ensure_within_root(resolved_root, resolved_target)
         return resolved_root, resolved_target
 

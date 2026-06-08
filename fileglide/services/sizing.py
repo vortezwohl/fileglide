@@ -14,7 +14,9 @@ class SizingService:
     def __init__(self, scope_service: ScopeService) -> None:
         self._scope = scope_service
 
-    def stat_size(self, root: str | Path | None, target: str | Path) -> dict[str, object]:
+    def stat_size(
+        self, root: str | Path | None, target: str | Path
+    ) -> dict[str, object]:
         """Return file size or aggregated directory size for a scoped target."""
 
         resolved_root, resolved_target = self._scope.resolve_target(root, target)
@@ -30,7 +32,11 @@ class SizingService:
             size_bytes = resolved_target.stat().st_size
             aggregate = False
         else:
-            size_bytes = sum(entry.stat().st_size for entry in resolved_target.rglob("*") if entry.is_file())
+            size_bytes = sum(
+                entry.stat().st_size
+                for entry in resolved_target.rglob("*")
+                if entry.is_file()
+            )
             aggregate = True
 
         return {
