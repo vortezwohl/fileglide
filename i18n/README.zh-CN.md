@@ -10,6 +10,7 @@
   </p>
   <p>
     <a href="#安装">安装</a> |
+    <a href="#agent-skills">Agent Skills</a> |
     <a href="#快速开始">快速开始</a> |
     <a href="#命令树">命令树</a> |
     <a href="#输出与编码">输出与编码</a> |
@@ -23,13 +24,29 @@
 
 ## 安装
 
-安装完成后，直接使用正式 CLI 入口即可：
+安装已经发布到 PyPI 的 `fileglide`。安装完成后会直接提供 `fileglide` CLI。
 
 ```powershell
+uv add -U fileglide
 fileglide --help
 ```
 
-需要 Python `3.10+`。CLI 基于 `click` 构建，默认输出契约为 JSON。
+```powershell
+pip install -U fileglide
+fileglide --help
+```
+
+运行环境要求为 Python `3.10+`。CLI 基于 `click` 构建，默认对外输出契约为 JSON。
+
+## Agent Skills
+
+FileGlide 也提供了 agent skill，可用于 Codex、Claude Code 以及其他 coding agent。
+
+当你希望 agent 帮你安装这些 skill 时，只需要直接说：
+
+> Please install skills from `https://github.com/vortezwohl/fileglide`, and place them in my global user skill directory.
+
+这些 skill 主要面向受约束文件系统访问、精确文本编辑、OpenSpec 变更流转，以及可验证的分步执行工作流。
 
 ## 快速开始
 

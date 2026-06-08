@@ -10,6 +10,7 @@
   </p>
   <p>
     <a href="#installation">Installation</a> |
+    <a href="#agent-skills">Agent Skills</a> |
     <a href="#quick-start">Quick Start</a> |
     <a href="#command-tree">Command Tree</a> |
     <a href="#output-and-encoding">Output and Encoding</a> |
@@ -23,13 +24,29 @@
 
 ## Installation
 
-Use the installed public CLI entry point directly:
+Install the published PyPI package `fileglide`. The package exposes the `fileglide` CLI directly after installation.
 
 ```powershell
+uv add -U fileglide
+fileglide --help
+```
+
+```powershell
+pip install -U fileglide
 fileglide --help
 ```
 
 Python `3.10+` is required. The CLI is implemented with `click` and exposes JSON as the default output contract.
+
+## Agent Skills
+
+FileGlide also provides agent skills for Codex, Claude Code, and other coding agents.
+
+When you want an agent to install them, just say:
+
+> Please install skills from `https://github.com/vortezwohl/fileglide`, and place them in my global user skill directory.
+
+These skills are intended for repository workflows built around constrained filesystem access, precise text editing, OpenSpec change management, and verifiable step-by-step execution.
 
 ## Quick Start
 
