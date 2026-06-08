@@ -1,6 +1,6 @@
 <div align="center">
   <h1>FileGlide</h1>
-  <p><strong>Agent-oriented filesystem CLI for precise, JSON-first file and path operations.</strong></p>
+  <p><strong>Agent-oriented filesystem CLI for precise, Chinese-friendly file and path operations with stronger non-ASCII support.</strong></p>
   <p>Traverse trees, inspect sizes, search names and content, edit exact line ranges, handle binary payloads, and execute explicit batch plans from one consistent command tree.</p>
   <p>
     <a href="https://www.python.org/"><img alt="Python 3.10+" src="https://img.shields.io/badge/Python-3.10%2B-2F5D8C"></a>

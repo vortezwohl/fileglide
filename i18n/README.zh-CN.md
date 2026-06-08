@@ -1,6 +1,6 @@
 <div align="center">
   <h1>FileGlide</h1>
-  <p><strong>面向 AI agent 的文件系统 CLI，提供精确、默认 JSON 的文件与路径操作能力。</strong></p>
+  <p><strong>面向 AI agent 的文件系统 CLI，提供精确、中文友好的文件与路径操作，并具备更强的非 ASCII 支持。</strong></p>
   <p>从统一命令树中完成树遍历、大小感知、名称与内容检索、精确行编辑、二进制处理，以及显式批量计划执行。</p>
   <p>
     <a href="https://www.python.org/"><img alt="Python 3.10+" src="https://img.shields.io/badge/Python-3.10%2B-2F5D8C"></a>
