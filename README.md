@@ -23,10 +23,10 @@
 
 ## Installation
 
-This repository currently targets local project execution. Use the project virtual environment command directly:
+Use the installed public CLI entry point directly:
 
 ```powershell
-& 'D:\github-project\fileglide\.venv\Scripts\fileglide.exe' --help
+fileglide --help
 ```
 
 Python `3.10+` is required. The CLI is implemented with `click` and exposes JSON as the default output contract.
@@ -36,7 +36,7 @@ Python `3.10+` is required. The CLI is implemented with `click` and exposes JSON
 ### 1. Create a scoped workspace path
 
 ```powershell
-& 'D:\github-project\fileglide\.venv\Scripts\fileglide.exe' path create 'tests/tmp/demo/docs' --root 'D:\github-project\fileglide' --parents --exist-ok
+fileglide path create 'tests/tmp/demo/docs' --root 'D:\github-project\fileglide' --parents --exist-ok
 ```
 
 Use `--root` to keep all relative paths constrained to a known workspace root.
@@ -44,8 +44,8 @@ Use `--root` to keep all relative paths constrained to a known workspace root.
 ### 2. Create and write a text file
 
 ```powershell
-& 'D:\github-project\fileglide\.venv\Scripts\fileglide.exe' file create 'tests/tmp/demo/docs/notes.txt' --root 'D:\github-project\fileglide' --parents --exist-ok
-& 'D:\github-project\fileglide\.venv\Scripts\fileglide.exe' text write 'tests/tmp/demo/docs/notes.txt' --root 'D:\github-project\fileglide' --mode overwrite --content "alpha`nbravo`ncharlie"
+fileglide file create 'tests/tmp/demo/docs/notes.txt' --root 'D:\github-project\fileglide' --parents --exist-ok
+fileglide text write 'tests/tmp/demo/docs/notes.txt' --root 'D:\github-project\fileglide' --mode overwrite --content "alpha`nbravo`ncharlie"
 ```
 
 Use `overwrite`, `append`, or `insert` modes to control how text mutations are applied.
@@ -53,7 +53,7 @@ Use `overwrite`, `append`, or `insert` modes to control how text mutations are a
 ### 3. Read exact line ranges
 
 ```powershell
-& 'D:\github-project\fileglide\.venv\Scripts\fileglide.exe' text read 'tests/tmp/demo/docs/notes.txt' --root 'D:\github-project\fileglide' --start-line 2 --end-line 3
+fileglide text read 'tests/tmp/demo/docs/notes.txt' --root 'D:\github-project\fileglide' --start-line 2 --end-line 3
 ```
 
 This is useful when an agent needs precise context instead of loading an entire file.
@@ -61,7 +61,7 @@ This is useful when an agent needs precise context instead of loading an entire 
 ### 4. Search file content with regex
 
 ```powershell
-& 'D:\github-project\fileglide\.venv\Scripts\fileglide.exe' text grep 'bravo|charlie' 'tests/tmp/demo' --root 'D:\github-project\fileglide' --include '*.txt'
+fileglide text grep 'bravo|charlie' 'tests/tmp/demo' --root 'D:\github-project\fileglide' --include '*.txt'
 ```
 
 Content search supports regular expressions and scoped traversal.
@@ -69,7 +69,7 @@ Content search supports regular expressions and scoped traversal.
 ### 5. Fuzzy search file names
 
 ```powershell
-& 'D:\github-project\fileglide\.venv\Scripts\fileglide.exe' file search 'note' 'tests/tmp/demo' --root 'D:\github-project\fileglide' --mode fuzzy
+fileglide file search 'note' 'tests/tmp/demo' --root 'D:\github-project\fileglide' --mode fuzzy
 ```
 
 Fuzzy filename and pathname matching is powered by `vortezwohl` Levenshtein distance utilities.
@@ -108,16 +108,16 @@ Practical notes:
 Representative editing and search operations:
 
 ```powershell
-& 'D:\github-project\fileglide\.venv\Scripts\fileglide.exe' text write 'tests/tmp/demo/docs/notes.txt' --root 'D:\github-project\fileglide' --mode append --content "`ndelta"
-& 'D:\github-project\fileglide\.venv\Scripts\fileglide.exe' text write 'tests/tmp/demo/docs/notes.txt' --root 'D:\github-project\fileglide' --mode insert --position 6 --content '[INSERT]'
-& 'D:\github-project\fileglide\.venv\Scripts\fileglide.exe' text replace-lines 'tests/tmp/demo/docs/notes.txt' --root 'D:\github-project\fileglide' --start-line 2 --end-line 2 --content 'BRAVO'
-& 'D:\github-project\fileglide\.venv\Scripts\fileglide.exe' text insert-anchor 'tests/tmp/demo/docs/notes.txt' --root 'D:\github-project\fileglide' --after --anchor 'BRAVO' --content "`nANCHOR-INSERT"
+fileglide text write 'tests/tmp/demo/docs/notes.txt' --root 'D:\github-project\fileglide' --mode append --content "`ndelta"
+fileglide text write 'tests/tmp/demo/docs/notes.txt' --root 'D:\github-project\fileglide' --mode insert --position 6 --content '[INSERT]'
+fileglide text replace-lines 'tests/tmp/demo/docs/notes.txt' --root 'D:\github-project\fileglide' --start-line 2 --end-line 2 --content 'BRAVO'
+fileglide text insert-anchor 'tests/tmp/demo/docs/notes.txt' --root 'D:\github-project\fileglide' --after --anchor 'BRAVO' --content "`nANCHOR-INSERT"
 ```
 
 ```powershell
-& 'D:\github-project\fileglide\.venv\Scripts\fileglide.exe' path search 'doc' 'tests/tmp/demo' --root 'D:\github-project\fileglide' --mode fuzzy --kind directory
-& 'D:\github-project\fileglide\.venv\Scripts\fileglide.exe' tree list 'tests/tmp/demo' --root 'D:\github-project\fileglide' --kind all
-& 'D:\github-project\fileglide\.venv\Scripts\fileglide.exe' inspect size 'tests/tmp/demo' --root 'D:\github-project\fileglide'
+fileglide path search 'doc' 'tests/tmp/demo' --root 'D:\github-project\fileglide' --mode fuzzy --kind directory
+fileglide tree list 'tests/tmp/demo' --root 'D:\github-project\fileglide' --kind all
+fileglide inspect size 'tests/tmp/demo' --root 'D:\github-project\fileglide'
 ```
 
 These commands are designed for AI agents that need exact, local, and verifiable filesystem actions instead of ad hoc shell parsing.
@@ -156,8 +156,8 @@ Example plan shape:
 Preview first, then apply when the plan looks correct:
 
 ```powershell
-& 'D:\github-project\fileglide\.venv\Scripts\fileglide.exe' batch run 'D:\github-project\fileglide\tests\fixtures\batch\sample-plan.json' --dry-run
-& 'D:\github-project\fileglide\.venv\Scripts\fileglide.exe' batch run 'D:\github-project\fileglide\tests\fixtures\batch\sample-plan.json' --apply
+fileglide batch run 'D:\github-project\fileglide\tests\fixtures\batch\sample-plan.json' --dry-run
+fileglide batch run 'D:\github-project\fileglide\tests\fixtures\batch\sample-plan.json' --apply
 ```
 
 ## More Docs

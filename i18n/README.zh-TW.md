@@ -23,10 +23,10 @@
 
 ## 安裝
 
-目前此倉庫以專案級本地執行為主，直接使用虛擬環境中的命令即可：
+安裝完成後，直接使用正式 CLI 入口即可：
 
 ```powershell
-& 'D:\github-project\fileglide\.venv\Scripts\fileglide.exe' --help
+fileglide --help
 ```
 
 需要 Python `3.10+`。CLI 基於 `click` 建構，預設輸出契約為 JSON。
@@ -36,7 +36,7 @@
 ### 1. 建立受控工作區目錄
 
 ```powershell
-& 'D:\github-project\fileglide\.venv\Scripts\fileglide.exe' path create 'tests/tmp/demo/docs' --root 'D:\github-project\fileglide' --parents --exist-ok
+fileglide path create 'tests/tmp/demo/docs' --root 'D:\github-project\fileglide' --parents --exist-ok
 ```
 
 透過 `--root` 可以把所有相對路徑約束在一個明確的工作區根目錄下。
@@ -44,8 +44,8 @@
 ### 2. 建立並寫入文字檔案
 
 ```powershell
-& 'D:\github-project\fileglide\.venv\Scripts\fileglide.exe' file create 'tests/tmp/demo/docs/notes.txt' --root 'D:\github-project\fileglide' --parents --exist-ok
-& 'D:\github-project\fileglide\.venv\Scripts\fileglide.exe' text write 'tests/tmp/demo/docs/notes.txt' --root 'D:\github-project\fileglide' --mode overwrite --content "alpha`nbravo`ncharlie"
+fileglide file create 'tests/tmp/demo/docs/notes.txt' --root 'D:\github-project\fileglide' --parents --exist-ok
+fileglide text write 'tests/tmp/demo/docs/notes.txt' --root 'D:\github-project\fileglide' --mode overwrite --content "alpha`nbravo`ncharlie"
 ```
 
 可以透過 `overwrite`、`append`、`insert` 三種模式控制文字寫入行為。
@@ -53,7 +53,7 @@
 ### 3. 精確讀取行區間
 
 ```powershell
-& 'D:\github-project\fileglide\.venv\Scripts\fileglide.exe' text read 'tests/tmp/demo/docs/notes.txt' --root 'D:\github-project\fileglide' --start-line 2 --end-line 3
+fileglide text read 'tests/tmp/demo/docs/notes.txt' --root 'D:\github-project\fileglide' --start-line 2 --end-line 3
 ```
 
 當 agent 只需要局部上下文而不想整個檔案載入時，這種精確讀取很有用。
@@ -61,7 +61,7 @@
 ### 4. 以正則檢索檔案內容
 
 ```powershell
-& 'D:\github-project\fileglide\.venv\Scripts\fileglide.exe' text grep 'bravo|charlie' 'tests/tmp/demo' --root 'D:\github-project\fileglide' --include '*.txt'
+fileglide text grep 'bravo|charlie' 'tests/tmp/demo' --root 'D:\github-project\fileglide' --include '*.txt'
 ```
 
 內容檢索支援正則表達式與局部範圍遍歷。
@@ -69,7 +69,7 @@
 ### 5. 模糊檢索檔名
 
 ```powershell
-& 'D:\github-project\fileglide\.venv\Scripts\fileglide.exe' file search 'note' 'tests/tmp/demo' --root 'D:\github-project\fileglide' --mode fuzzy
+fileglide file search 'note' 'tests/tmp/demo' --root 'D:\github-project\fileglide' --mode fuzzy
 ```
 
 檔名與路徑名的模糊比對基於 `vortezwohl` 的萊文斯坦距離能力實作。
@@ -108,16 +108,16 @@
 代表性的編輯與檢索操作：
 
 ```powershell
-& 'D:\github-project\fileglide\.venv\Scripts\fileglide.exe' text write 'tests/tmp/demo/docs/notes.txt' --root 'D:\github-project\fileglide' --mode append --content "`ndelta"
-& 'D:\github-project\fileglide\.venv\Scripts\fileglide.exe' text write 'tests/tmp/demo/docs/notes.txt' --root 'D:\github-project\fileglide' --mode insert --position 6 --content '[INSERT]'
-& 'D:\github-project\fileglide\.venv\Scripts\fileglide.exe' text replace-lines 'tests/tmp/demo/docs/notes.txt' --root 'D:\github-project\fileglide' --start-line 2 --end-line 2 --content 'BRAVO'
-& 'D:\github-project\fileglide\.venv\Scripts\fileglide.exe' text insert-anchor 'tests/tmp/demo/docs/notes.txt' --root 'D:\github-project\fileglide' --after --anchor 'BRAVO' --content "`nANCHOR-INSERT"
+fileglide text write 'tests/tmp/demo/docs/notes.txt' --root 'D:\github-project\fileglide' --mode append --content "`ndelta"
+fileglide text write 'tests/tmp/demo/docs/notes.txt' --root 'D:\github-project\fileglide' --mode insert --position 6 --content '[INSERT]'
+fileglide text replace-lines 'tests/tmp/demo/docs/notes.txt' --root 'D:\github-project\fileglide' --start-line 2 --end-line 2 --content 'BRAVO'
+fileglide text insert-anchor 'tests/tmp/demo/docs/notes.txt' --root 'D:\github-project\fileglide' --after --anchor 'BRAVO' --content "`nANCHOR-INSERT"
 ```
 
 ```powershell
-& 'D:\github-project\fileglide\.venv\Scripts\fileglide.exe' path search 'doc' 'tests/tmp/demo' --root 'D:\github-project\fileglide' --mode fuzzy --kind directory
-& 'D:\github-project\fileglide\.venv\Scripts\fileglide.exe' tree list 'tests/tmp/demo' --root 'D:\github-project\fileglide' --kind all
-& 'D:\github-project\fileglide\.venv\Scripts\fileglide.exe' inspect size 'tests/tmp/demo' --root 'D:\github-project\fileglide'
+fileglide path search 'doc' 'tests/tmp/demo' --root 'D:\github-project\fileglide' --mode fuzzy --kind directory
+fileglide tree list 'tests/tmp/demo' --root 'D:\github-project\fileglide' --kind all
+fileglide inspect size 'tests/tmp/demo' --root 'D:\github-project\fileglide'
 ```
 
 這些命令是為 AI agent 設計，目標是讓檔案系統操作具備精確、本地、可驗證的行為，而不是依賴脆弱的 shell 文字解析。
@@ -156,8 +156,8 @@
 建議先預覽，再執行：
 
 ```powershell
-& 'D:\github-project\fileglide\.venv\Scripts\fileglide.exe' batch run 'D:\github-project\fileglide\tests\fixtures\batch\sample-plan.json' --dry-run
-& 'D:\github-project\fileglide\.venv\Scripts\fileglide.exe' batch run 'D:\github-project\fileglide\tests\fixtures\batch\sample-plan.json' --apply
+fileglide batch run 'D:\github-project\fileglide\tests\fixtures\batch\sample-plan.json' --dry-run
+fileglide batch run 'D:\github-project\fileglide\tests\fixtures\batch\sample-plan.json' --apply
 ```
 
 ## 更多文件
