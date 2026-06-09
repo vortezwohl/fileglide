@@ -52,7 +52,7 @@ skill 面向 agent 的强制策略：
 1. 先选对应子命令：`path create`、`file create`、`text read`、`text write`、`text replace-lines`、`text grep`、`file search`/`path search`、`tree list`、`inspect size`/`inspect bytes`、`batch run`。
 2. 大内容写入时，用 Python `subprocess.run(..., input=payload.encode("utf-8"))` 调用 `fileglide text write --content-stdin`。
 3. 编辑时优先做整块替换(块大小最少为 24 行)，不要链式堆积碎片补丁。
-4. 每次写入后立即 `text read` 回读刚修改的区块。
+4. 每次写入后立即 `text read` 回读刚修改的区块，顺带检查文件中是否写入了乱码和大面积的问号。
 5. 如果怀疑编码或 BOM 异常，再用 `inspect bytes` 确认真实字节。
 
 ## 何时读 reference
